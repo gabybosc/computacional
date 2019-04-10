@@ -5,7 +5,6 @@
 
 #define MAXFILENAME 100
 
-int cuerpo(double P, int N);
 int poblar(int *red, int N, double P);
 int imprimir(int *red, int N);
 int clasificar(int *red, int N);
@@ -18,63 +17,54 @@ int percola(int *red, int N);
 
 //------------MAIN-------------
 int main(){
-	int PERC,n,m;
-	double TOL = 0.0001;
+	int PERC,n;
+	int *red;
+	double TOL = 0.01;
 	double P, DIF;
-	int N = 128; //tamaño de la red
-	FILE *fp;
+	int N = 5; //tamaño de la red
+
 	srand(time(NULL));
+	P = 0.0;
+	DIF = 0.5;
+	PERC=0;
+	n = 1;
 
-	for (m=0;m<100;m++){
-		P = 0.0;
-		DIF = 0.5;
-		PERC=0;
-		n = 1;
+	while (DIF>TOL){
+		DIF = pow(0.5,n);
 
-		while (DIF>TOL){
-			DIF = pow(0.5,n);
-
-			if (PERC == 0){
-				P = P + DIF;
-				PERC = cuerpo(P, N);
-			}
-			else{
-				P = P - DIF;
-				PERC = cuerpo(P, N);
-			}
-			n++;
+		if (PERC == 0){
+			red = (int*)malloc(N*N*sizeof(int));
+			P = P + DIF;
+			poblar(red,N,P);
+			imprimir(red,N);
+			printf(" ^ la nueva red con proba %f \n",P);
+			clasificar(red,N);
+			PERC = percola(red,N);
+			imprimir(red,N);
+			printf("^ la red clasificada\n");
+			free(red);
 		}
-		// printf("P = %f \n", P);
-		// printf("m = %d \n",m);
-
-		char fn[MAXFILENAME+1];
-		snprintf(fn, MAXFILENAME, "proba_lado_%d.txt", N); //para que las probas de cada tamaño de red sean distintos archivos
-		fp = fopen(fn, "a"); //"a" es append, mientras que "w" sobreescribe
-		if(fp == NULL)
-			exit(-1);
-		fprintf(fp, "%f \n", P);
-		fclose(fp);
+		else{
+			red = (int*)malloc(N*N*sizeof(int));
+			P = P - DIF;
+			poblar(red,N,P);
+			imprimir(red,N);
+			printf(" ^ la nueva red con proba %f \n",P);
+			clasificar(red,N);
+			PERC = percola(red,N);
+			imprimir(red,N);
+			printf("^ la red clasificada \n");
+			free(red);
+		}
+		n++;
 	}
+
 
 return 0;
 }
 
 
 //----------FUNCIONES----------
-int cuerpo(double P, int N){
-	int *red;
-	red = (int*)malloc(N*N*sizeof(int));
-	int PERC;
-
-	poblar(red,N,P);
-	clasificar(red,N);
-	PERC = percola(red,N);
-
-	free(red);
-return PERC;
-}
-
-
 int poblar(int *red, int N, double P){
 //llena la red cuadrada de lado N con prob P
 	int i;
@@ -154,9 +144,9 @@ int clasificar(int *red, int N){
 		{j = *(red+i);
 		*(red+i) = etiqueta_verdadera(historial, j);
 		}
-
-free(frag);
-free(historial);
+// free(red);
+// free(frag);
+// free(historial);
 
 return 0;
 }
